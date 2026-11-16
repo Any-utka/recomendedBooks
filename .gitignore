@@ -1,0 +1,7 @@
+# Секреты: ключи Groq, Google Books, пароль Gmail
+.env
+
+# Служебные файлы Python и Jupyter
+__pycache__/
+*.pyc
+.ipynb_checkpoints/

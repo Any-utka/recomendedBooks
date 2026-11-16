@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Book Recommender</title>
+  <link rel="stylesheet" href="style.css?v=6">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="logo">📚 Book Recommender</div>
+    <nav class="tabs">
+      <button class="tab-btn active" data-tab="recommend">Рекомендации</button>
+      <button class="tab-btn" data-tab="genre">По жанру</button>
+      <button class="tab-btn" data-tab="new">Новая книга</button>
+      <button class="tab-btn" data-tab="analytics">Дашборд</button>
+    </nav>
+  </header>
+
+  <!-- ==== ВКЛАДКА: РЕКОМЕНДАЦИИ ==== -->
+  <section id="tab-recommend" class="tab-content active">
+    <div class="layout">
+
+      <aside class="sidebar">
+        <input type="text" id="searchInput" placeholder="Поиск по названию...">
+        <div id="bookList" class="book-list-sidebar"></div>
+      </aside>
+
+      <main class="main-panel">
+        <div id="emptyState" class="empty-state">
+          ← Выбери книгу слева, чтобы увидеть рекомендации
+        </div>
+
+        <div id="resultsArea" style="display: none;">
+          <h2 id="selectedBookTitle"></h2>
+
+          <h3 class="section-label">Похожие книги</h3>
+          <div id="recommendations" class="book-list"></div>
+
+          <div id="trendingSection"></div>
+
+          <button id="emailOpenBtn" class="btn email-btn">📧 Отправить подборку на email</button>
+        </div>
+      </main>
+
+    </div>
+  </section>
+
+  <!-- ==== ВКЛАДКА: ПО ЖАНРУ ==== -->
+  <section id="tab-genre" class="tab-content">
+    <div class="layout">
+
+      <aside class="sidebar">
+        <select id="genreSelect" class="chart-select" style="margin-bottom: 16px;">
+          <option value="">— выбери жанр —</option>
+        </select>
+        <div id="genreBookList" class="book-list-sidebar"></div>
+      </aside>
+
+      <main class="main-panel">
+        <div id="genreEmptyState" class="empty-state">
+          ← Выбери жанр, затем книгу слева
+        </div>
+
+        <div id="genreResultsArea" style="display:none;">
+          <h2 id="genreSelectedTitle"></h2>
+          <h3 class="section-label">Похожие книги этого жанра (по рейтингу)</h3>
+          <div id="genreRecommendations" class="book-list"></div>
+        </div>
+      </main>
+
+    </div>
+  </section>
+
+  <!-- ==== ВКЛАДКА: НОВАЯ КНИГА (предсказание на новых данных) ==== -->
+  <section id="tab-new" class="tab-content">
+    <div class="layout">
+
+      <aside class="sidebar">
+        <p class="sidebar-hint">Найди книгу в Google Books — данные подставятся в форму. Или заполни форму вручную.</p>
+        <div class="search-row">
+          <input type="text" id="googleQuery" class="dark-input" placeholder="Название или автор...">
+          <button id="googleSearchBtn" class="btn">Найти</button>
+        </div>
+        <div id="googleResults" class="book-list-sidebar"></div>
+      </aside>
+
+      <main class="main-panel">
+        <h2 class="panel-title">Новая книга</h2>
+
+        <form id="newBookForm" class="new-book-form">
+          <label>Название
+            <input type="text" id="nbTitle" required>
+          </label>
+          <div class="form-row">
+            <label>Жанр
+              <input type="text" id="nbGenre" list="genreOptions" placeholder="например, Fiction">
+            </label>
+            <label>Количество страниц
+              <input type="number" id="nbPages" min="1">
+            </label>
+          </div>
+          <datalist id="genreOptions"></datalist>
+          <label>Описание (на английском)
+            <textarea id="nbDescription" rows="6"></textarea>
+          </label>
+          <button type="submit" class="btn">Подобрать похожие</button>
+        </form>
+
+        <div id="newBookInfo"></div>
+        <div id="newBookResults" class="book-list"></div>
+      </main>
+
+    </div>
+  </section>
+
+  <!-- ==== ВКЛАДКА: ДАШБОРД ==== -->
+  <section id="tab-analytics" class="tab-content">
+    <div class="dashboard-wrap">
+
+      <!-- Живая аналитика: строится по логу запросов пользователей -->
+      <div class="dashboard-head">
+        <h2 class="panel-title">Живая аналитика</h2>
+        <button id="refreshLive" class="btn">Обновить</button>
+      </div>
+      <p class="dashboard-sub">Что ищут пользователи и насколько уверенно работает модель — по всем подборкам, сделанным на сайте.</p>
+      <div id="liveEmpty" class="info-note" style="display:none;">Пока нет ни одной подборки — сделай несколько рекомендаций на других вкладках, и здесь появятся графики.</div>
+
+      <div id="liveContent">
+        <div id="liveKpiRow" class="kpi-row"></div>
+        <div class="chart-grid">
+          <div class="chart-card"><h3>Подборки по дням</h3><canvas id="chartPerDay"></canvas></div>
+          <div class="chart-card"><h3>Распределение сходства в подборках</h3><canvas id="chartSimilarity"></canvas>
+            <p>Левый столбец (0–0.2) — рекомендации, в которых модель не уверена.</p></div>
+          <div class="chart-card"><h3>Самые запрашиваемые книги</h3><canvas id="chartTopBooks"></canvas></div>
+          <div class="chart-card"><h3>Самые запрашиваемые жанры</h3><canvas id="chartTopGenres"></canvas></div>
+        </div>
+        <div class="chart-card missing-card">
+          <h3>Ищут, но нет в каталоге</h3>
+          <p>Книги, для которых пользователи искали похожие через «Новую книгу» или чат, — кандидаты на закупку.</p>
+          <div id="missingBooks"></div>
+        </div>
+      </div>
+
+      <!-- Статичная аналитика каталога (графики из Jupyter-ноутбука) -->
+      <h2 class="panel-title section-gap">Каталог</h2>
+      <div id="kpiRow" class="kpi-row"></div>
+      <div id="chartGrid" class="chart-grid"></div>
+    </div>
+  </section>
+<!-- ==== ОКНО: ПИСЬМО С ПОДБОРКОЙ (human-in-the-loop) ==== -->
+<div id="emailModal" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <span>Письмо с подборкой</span>
+      <button id="emailClose" class="chat-close">✕</button>
+    </div>
+    <p class="modal-hint">Черновик подготовил AI-агент. Проверь и при необходимости исправь текст — письмо уйдёт только после нажатия «Отправить».</p>
+    <label>Кому
+      <input type="email" id="emailTo" placeholder="reader@example.com">
+    </label>
+    <label>Тема
+      <input type="text" id="emailSubject">
+    </label>
+    <label>Текст письма
+      <textarea id="emailBody" rows="12"></textarea>
+    </label>
+    <div id="emailStatus"></div>
+    <div class="modal-actions">
+      <button id="emailCancel" class="btn btn-secondary">Отмена</button>
+      <button id="emailSend" class="btn">Отправить</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==== ПЛАВАЮЩИЙ ЧАТ ==== -->
+<div id="chatBubble" class="chat-bubble">💬</div>
+
+<div id="chatWindow" class="chat-window">
+  <div class="chat-header">
+    <span>Книжный помощник</span>
+    <button id="chatClose" class="chat-close">✕</button>
+  </div>
+  <div id="chatMessages" class="chat-messages">
+    <div class="chat-msg chat-msg-bot">Привет! Спроси меня о книгах — могу что-то посоветовать, найти по жанру или сравнить две книги.</div>
+  </div>
+  <div class="chat-input-row">
+    <input type="text" id="chatInput" placeholder="Напиши сообщение...">
+    <button id="chatSend">➤</button>
+  </div>
+</div>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="script.js?v=6"></script>
+</body>
+</html>

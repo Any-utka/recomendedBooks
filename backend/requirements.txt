@@ -1,0 +1,11 @@
+﻿pandas
+openpyxl
+scikit-learn
+fastapi
+uvicorn
+python-multipart
+requests
+python-dotenv
+groq
+matplotlib
+seaborn
